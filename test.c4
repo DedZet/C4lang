@@ -1,0 +1,17 @@
+bomb add(x, y) {
+    win x+y;
+}
+
+bomb plant() {      // main func
+
+    pin c = 'C';
+    pin four = '4';
+
+    radio("Hello World");
+    radio(" \n never xexexsts");
+
+    wire sum = add(6,4);
+    win sum;
+
+    //win cterr;
+}
