@@ -4,14 +4,11 @@
 #include <vector>
 #include <cassert>
 #include <optional>
+#include <iostream>
 
 enum class TokenType {
     WIN,
     INT_LIT,
-    STRING_LIT,
-    FLOAT_LIT,
-    DOUBLE_LIT,
-    CHAR_LIT,
     SEMI,
     open_paren,
     close_paren,
@@ -33,11 +30,45 @@ enum class TokenType {
     FLEE,
     CTERR,
     TERR,
+    STRING_LIT,
+    FLOAT_LIT,
+    DOUBLE_LIT,
+    CHAR_LIT,
     TRUE,
     FALSE,
     PIN,
     COMMA,
     RADIO,
+    LESS,           // <
+    GREATER,        // >
+    EQUAL_CMP,      // <>  (==)
+    NOT_EQUAL_CMP,  // ><  (!=)
+    LESS_EQ,        // <<  (<=)
+    GREATER_EQ,     // >>  (>=)
+    AND,            // and
+    OR,             // or
+    NOT,            // not
+    NOR,            // nor
+    RANK,           // rank()
+    TYPE_INT,       // int
+    TYPE_BOOL,      // bool
+    TYPE_CHAR,      // char
+    TYPE_STRING,    // string
+    TYPE_FLOAT,     // float
+    TYPE_DOUBLE,    // double
+
+    TYPE_SHORT,     // short (2 bytes)
+    TYPE_LONG,      // long (8 bytes)
+    TYPE_LONGLONG,  // longlong (16 bytes)
+    SHORT_LIT,      // 123s
+    LONG_LIT,       // 123xl
+    LONGLONG_LIT,   // 123xxl
+    SIGN,           // sign
+    MUD,            // MUD
+    FOR,            // for
+    WHILE,          // while
+    SIZEOF,         // sizeof
+    AMPERSAND,      // &
 };
 
 inline std::string to_string(const TokenType type) {
@@ -74,6 +105,35 @@ inline std::string to_string(const TokenType type) {
     case TokenType::PIN:            return "`pin`";
     case TokenType::COMMA:          return "`,`";
     case TokenType::RADIO:          return "`radio`";
+    case TokenType::LESS:           return "`<`";
+    case TokenType::GREATER:        return "`>`";
+    case TokenType::EQUAL_CMP:      return "`<>`";
+    case TokenType::NOT_EQUAL_CMP:  return "`><`";
+    case TokenType::LESS_EQ:        return "`<<`";
+    case TokenType::GREATER_EQ:     return "`>>`";
+    case TokenType::AND:            return "`and`";
+    case TokenType::OR:             return "`or`";
+    case TokenType::NOT:            return "`not`";
+    case TokenType::NOR:            return "`nor`";
+    case TokenType::RANK:           return "`rank`";
+    case TokenType::TYPE_INT:       return "`int`";
+    case TokenType::TYPE_BOOL:      return "`bool`";
+    case TokenType::TYPE_CHAR:      return "`char`";
+    case TokenType::TYPE_STRING:    return "`string`";
+    case TokenType::TYPE_FLOAT:     return "`float`";
+    case TokenType::TYPE_DOUBLE:    return "`double`";
+    case TokenType::TYPE_SHORT:     return "`short`";
+    case TokenType::TYPE_LONG:      return "`long`";
+    case TokenType::TYPE_LONGLONG:  return "`longlong`";
+    case TokenType::SHORT_LIT:      return "short literal";
+    case TokenType::LONG_LIT:       return "long literal";
+    case TokenType::LONGLONG_LIT:   return "long long literal";
+    case TokenType::SIGN:           return "`sign`";
+    case TokenType::MUD:            return "`MUD`";
+    case TokenType::FOR:            return "`for`";
+    case TokenType::WHILE:          return "`while`";
+    case TokenType::SIZEOF:         return "`sizeof`";
+    case TokenType::AMPERSAND:      return "`&`";
     default: assert(false);
     }
     return "";
@@ -139,11 +199,62 @@ public:
                     tokens.push_back({ TokenType::TRUE, line_count });
                 } else if (buf == "False") {
                     tokens.push_back({ TokenType::FALSE, line_count });
+                } else if (buf == "MUD") {
+                    tokens.push_back({ TokenType::MUD, line_count });
+                } else if (buf == "and") {
+                    tokens.push_back({ TokenType::AND, line_count });
+                } else if (buf == "or") {
+                    tokens.push_back({ TokenType::OR, line_count });
+                } else if (buf == "not") {
+                    tokens.push_back({ TokenType::NOT, line_count });
+                } else if (buf == "nor") {
+                    tokens.push_back({ TokenType::NOR, line_count });
+                } else if (buf == "rank") {
+                    tokens.push_back({ TokenType::RANK, line_count });
+                } else if (buf == "int") {
+                    tokens.push_back({ TokenType::TYPE_INT, line_count });
+                } else if (buf == "bool") {
+                    tokens.push_back({ TokenType::TYPE_BOOL, line_count });
+                } else if (buf == "char") {
+                    tokens.push_back({ TokenType::TYPE_CHAR, line_count });
+                } else if (buf == "string") {
+                    tokens.push_back({ TokenType::TYPE_STRING, line_count });
+                } else if (buf == "float") {
+                    tokens.push_back({ TokenType::TYPE_FLOAT, line_count });
+                } else if (buf == "double") {
+                    tokens.push_back({ TokenType::TYPE_DOUBLE, line_count });
+                } else if (buf == "short") {
+                    tokens.push_back({ TokenType::TYPE_SHORT, line_count });
+                } else if (buf == "longlong") {
+                    tokens.push_back({ TokenType::TYPE_LONGLONG, line_count });
+                } else if (buf == "long") {
+                    tokens.push_back({ TokenType::TYPE_LONG, line_count });
+                } else if (buf == "sign") {
+                    tokens.push_back({ TokenType::SIGN, line_count });
+                } else if (buf == "for") {
+                    tokens.push_back({ TokenType::FOR, line_count });
+                } else if (buf == "while") {
+                    tokens.push_back({ TokenType::WHILE, line_count });
+                } else if (buf == "sizeof") {
+                    tokens.push_back({ TokenType::SIZEOF, line_count });
                 } else {
                     tokens.push_back({ TokenType::IDENT, line_count, buf });
                 }
                 buf.clear();
             } else if (std::isdigit(peek().value()) || peek().value() == '.') {
+
+                if (peek().value() == '0' && peek(1).has_value() &&
+                    (peek(1).value() == 'x' || peek(1).value() == 'X') &&
+                    peek(2).has_value() && std::isxdigit(static_cast<unsigned char>(peek(2).value()))) {
+                    buf.push_back(consume()); // '0'
+                    buf.push_back(consume()); // 'x' / 'X'
+                    while (peek().has_value() && std::isxdigit(static_cast<unsigned char>(peek().value()))) {
+                        buf.push_back(consume());
+                    }
+                    tokens.push_back({ TokenType::INT_LIT, line_count, buf });
+                    buf.clear();
+                    continue;
+                }
                 bool has_dot = false;
                 buf.push_back(consume());
                 while (peek().has_value() && (std::isdigit(peek().value()) || peek().value() == '.')) {
@@ -153,14 +264,30 @@ public:
                     }
                     buf.push_back(consume());
                 }
-                TokenType type = TokenType::INT_LIT;
-                if (peek().has_value() && (peek().value() == 'f' || peek().value() == 'd')) {
-                    char suffix = consume();
-                    if (suffix == 'f') type = TokenType::FLOAT_LIT;
-                    else if (suffix == 'd') type = TokenType::DOUBLE_LIT;
+
+                TokenType type;
+                if (peek().has_value() && peek().value() == 'f') {
+                    consume();
+                    type = TokenType::FLOAT_LIT;
+                } else if (peek().has_value() && peek().value() == 'd') {
+                    consume();
+                    type = TokenType::DOUBLE_LIT;
+                } else if (!has_dot && peek().has_value() && peek().value() == 's') {
+                    consume();
+                    type = TokenType::SHORT_LIT;
+                } else if (!has_dot && peek().has_value() && peek().value() == 'x'
+                           && peek(1).has_value() && peek(1).value() == 'x'
+                           && peek(2).has_value() && peek(2).value() == 'l') {
+                    consume(); consume(); consume();
+                    type = TokenType::LONGLONG_LIT;
+                } else if (!has_dot && peek().has_value() && peek().value() == 'x'
+                           && peek(1).has_value() && peek(1).value() == 'l') {
+                    consume(); consume();
+                    type = TokenType::LONG_LIT;
                 } else if (has_dot) {
-                    std::cerr << "Floating literal must have suffix 'f' or 'd' at line " << line_count << std::endl;
-                    exit(EXIT_FAILURE);
+                    type = TokenType::FLOAT_LIT;
+                } else {
+                    type = TokenType::INT_LIT;
                 }
                 tokens.push_back({ type, line_count, buf });
                 buf.clear();
@@ -206,9 +333,34 @@ public:
             else if (peek().value() == '*') { consume(); tokens.push_back({ TokenType::STAR, line_count }); }
             else if (peek().value() == '-') { consume(); tokens.push_back({ TokenType::MINUS, line_count }); }
             else if (peek().value() == '/') { consume(); tokens.push_back({ TokenType::FSLAH, line_count }); }
+            else if (peek().value() == '<') {
+                consume();
+                if (peek().has_value() && peek().value() == '<') {
+                    consume();
+                    tokens.push_back({ TokenType::LESS_EQ, line_count });
+                } else if (peek().has_value() && peek().value() == '>') {
+                    consume();
+                    tokens.push_back({ TokenType::EQUAL_CMP, line_count });
+                } else {
+                    tokens.push_back({ TokenType::LESS, line_count });
+                }
+            }
+            else if (peek().value() == '>') {
+                consume();
+                if (peek().has_value() && peek().value() == '>') {
+                    consume();
+                    tokens.push_back({ TokenType::GREATER_EQ, line_count });
+                } else if (peek().has_value() && peek().value() == '<') {
+                    consume();
+                    tokens.push_back({ TokenType::NOT_EQUAL_CMP, line_count });
+                } else {
+                    tokens.push_back({ TokenType::GREATER, line_count });
+                }
+            }
             else if (peek().value() == '{') { consume(); tokens.push_back({ TokenType::OPEN_CURLY, line_count }); }
             else if (peek().value() == '}') { consume(); tokens.push_back({ TokenType::CLOSE_CURLY, line_count }); }
             else if (peek().value() == ',') { consume(); tokens.push_back({ TokenType::COMMA, line_count }); }
+            else if (peek().value() == '&') { consume(); tokens.push_back({ TokenType::AMPERSAND, line_count }); }
             else if (peek().value() == '\n') { consume(); line_count++; }
             else if (std::isspace(peek().value())) { consume(); }
             else {

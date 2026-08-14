@@ -1,0 +1,28 @@
+bomb add(x, y) {
+    if (rank(x) <> int and rank(y) <> int) {
+        //radio("cool");
+        win y;
+    }
+    else {
+        radio("Error");
+        win terr;
+    }
+}
+
+bomb plant() {
+    
+    // wire *vgabuff = (char*) 0xB8000;
+    
+    wire *text = (char*) malloc(3*sizeof(char));
+
+    *(text+0) = 'L'; // text[0]
+    *(text+1) = 'O'; // text[1]
+    *(text+2) = 'B'; // text[2]
+
+    wire i = (int) MUD;
+    for (i = 0; i < 3; i = i + 1) {
+        radio(string(*(text+i)));
+    }
+
+    win cterr;
+}

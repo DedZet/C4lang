@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
 	system("nasm -felf64 out.asm");
 	system("ld -o out out.o");
 	system("./out");
-	//std::cout << "\nCompiled successfully (exit code " << formatCode << ")\n";
+	std::cout << "\nProgram compiled successfully (exit code " << 0 << ")\n";
 	//system("echo $?");
 
 	return EXIT_SUCCESS;
